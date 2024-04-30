@@ -6,25 +6,27 @@ import NoteList from "./NoteList"
 import Image from "next/image"
 import { Note } from "@/types/Note"
 
-const NotesContent = () => {
-    const [lists, setLists] = useState<Array<Note>>(JSON.parse(localStorage.getItem('lists') || '') || [{
-        title: '',
-        date: new Date().toDateString() + ', ' + new Date().toLocaleTimeString(),
+const generateNewNote = () => {
+    const date = new Date()
+    return { title: '',
+        date: date.toDateString() + ', ' + date.toLocaleTimeString([], { hour12: true, timeStyle: 'short' }),
         description: ''
-    }])
+    }
+}
+
+const NotesContent = () => {
+    const [lists, setLists] = useState<Array<Note>>(typeof window !== "undefined" ? JSON.parse(localStorage.getItem('lists') || JSON.stringify([generateNewNote()])) : null || [generateNewNote()])
     const [selectedNote, setSelectedNote] = useState(0)
 
     useEffect(() => {
-        localStorage.setItem('lists', JSON.stringify(lists))
+        if (typeof window !== "undefined") {
+            localStorage.setItem('lists', JSON.stringify(lists))
+        }
     }, [lists])
 
-    const generateNewNote = () => {
-        const date = new Date()
-        setLists([{
-            title: '',
-            date: date.toDateString() + ', ' + date.toLocaleTimeString([], { hour12: true, timeStyle: 'short' }),
-            description: ''
-        }, ...lists])
+    const createNewNote = () => {
+        const note = generateNewNote()
+        setLists([note, ...lists])
         setSelectedNote(0)
     }
 
@@ -50,7 +52,7 @@ const NotesContent = () => {
             <div className="h-full md:col-span-3 flex flex-col">
                 <div className="flex items-center p-3 md:col-span-3 justify-between">
                     <div className="flex gap-1">
-                        <button onClick={generateNewNote} className="hover:bg-gray-100 duration-300 p-2 rounded-lg">
+                        <button onClick={createNewNote} className="hover:bg-gray-100 duration-300 p-2 rounded-lg">
                             <Image src="edit.svg" alt="create" width={20} height={20} />
                         </button>
                         <button onClick={deleteNote} className="flex items-center hover:bg-gray-100 duration-300 p-2 rounded-lg">
